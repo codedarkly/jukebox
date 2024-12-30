@@ -43,6 +43,9 @@ def search():
 def music_library():
     pass
 
+@app.route('/song-of-the-day', methods=['GET'])
+def sotd():
+    pass
 
 if __name__ == '__main__':
     app.run()

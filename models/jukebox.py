@@ -9,3 +9,6 @@ class Jukebox(db.Model):
     visibility = db.Column(db.Boolean, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('users', lazy=True))
+
+    def create_jukebox():
+        pass

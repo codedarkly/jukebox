@@ -12,3 +12,9 @@ class Album(db.Model):
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.artist_id'), nullable=False)
     artist = db.relationship('Artist', backref=db.backref('artists', lazy=True))
+
+    def add_album():
+        pass
+
+    def update_album():
+        pass
