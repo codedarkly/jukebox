@@ -2,7 +2,11 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 from email_validator import validate_email, EmailNotValidError
 from datetime import datetime
+import smtplib
+from email.message import EmailMessage
 import re
+import random
+import string
 
 db = SQLAlchemy()
 
@@ -14,6 +18,7 @@ class User(db.Model):
     image = db.Column(db.String(100),default='/static/images/default-user.png')
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     last_active = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    status = db.Column(db.String(8),default='active')
 
     @validates('fullname')
     def validate_fullname(self, key, fullname):
@@ -39,6 +44,24 @@ class User(db.Model):
         except EmailNotValidError as e:
             return str(e)
 
+    @staticmethod
+    def generate_passcode():
+        #generate a passcode of 8 characters and store it in redis(expire it in 10 minutes)
+        return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+
+    @staticmethod
+    def mail_passcode(**data):
+       #send email with generated passcode
+       msg = EmailMessage()
+       msg['to'] = data['email']
+       msg['subject'] = data['subject']
+       msg['from'] = data['sender']
+       msg.set_content(data['template'], subtype='html')
+       with smtplib.SMTP_SSL(data['server'], data['port']) as smtp:
+           smtp.login(data['username'] , data['password'])
+           smtp.send_message(msg)
+       return 200
+
 
 
 
@@ -62,16 +85,10 @@ class User(db.Model):
     def deactivate_account():
         pass
 
-    def generate_passcode():
-        #generate a passcode of 8 characters and store it in redis(expire it in 10 minutes)
-        pass
+
 
     def update_account():
         pass
 
     def get_account():
-        pass
-
-    def mail_passcode():
-        #send email with generated passcode
         pass

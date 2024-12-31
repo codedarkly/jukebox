@@ -9,12 +9,21 @@ from models.song import Song
 from dotenv import load_dotenv
 from datetime import datetime
 import os
+import smtplib
+from email.message import EmailMessage
 
 load_dotenv('.env')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = os.environ.get('MAIL_PORT')
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS')
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 db.init_app(app)
 
 
@@ -24,7 +33,19 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-   pass
+    template = render_template('email.html', name='Bobby', passcode=User.generate_passcode())
+    registration_data = {
+        'email' : 'me@example.net',
+        'subject' : 'Welcome to Jukebox - Registration',
+        'sender' : app.config['MAIL_DEFAULT_SENDER'],
+        'port' : app.config['MAIL_PORT'],
+        'template' : template,
+        'server' : app.config['MAIL_SERVER'],
+        'username' : app.config['MAIL_USERNAME'],
+        'password' : app.config['MAIL_PASSWORD']
+    }
+    User.mail_passcode(**registration_data)
+    return 'message sent'
 
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
