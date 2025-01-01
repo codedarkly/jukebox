@@ -65,19 +65,27 @@ class User(db.Model):
 
     @staticmethod
     def cache_passcode(rc, user):
-        registration_ts = f'user:00{str(int(time.time()))}'
-        rc.hset(registration_ts, mapping=user)
-        rc.expire(registration_ts, 900)
-        rc_result = rc.hgetall(registration_ts)
+        user_registration = f'username:{user["username"]}'
+        rc.hset(user_registration, mapping=user)
+        rc.expire(user_registration, 900)
+        rc_result = rc.hgetall(user_registration)
         data = {k.decode():v.decode() for k,v in rc_result.items()}
         return data
 
-    def verify_passcode():
+    @staticmethod
+    def verify_passcode(rc, **user):
         #verify that the passcode matches account
+        try:
+            rc_result = rc.hgetall(user['username'])
+            data = {k.decode():v.decode() for k, v in rc_result.items()}
+            return data['passcode']
+        except KeyError:
+            return 'Your passcode or username is incorrect or your passcode has expired', 401
+
+
+    def check_for_account_existence():
+        #check database for user account
         pass
-
-
-
 
 
     def signin():
@@ -86,16 +94,8 @@ class User(db.Model):
     def signout():
         pass
 
-    def check_accounts():
-        #check for user account
-        pass
-
-
-
     def deactivate_account():
         pass
-
-
 
     def update_account():
         pass

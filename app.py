@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, make_response
 from models.user import db, User
 from models.artist import Artist
 from models.album import Album
@@ -41,10 +41,10 @@ def index():
 def register():
     user = {
      'name' : 'Bobby',
+     'username' : 'USERNAME HERE',
      'passcode' : User.generate_passcode(),
      'email' : app.config['MAIL_TEST_RECIPIENT']
     }
-    User.cache_passcode(rc, user)
     template = render_template('email.html', name=user['name'], passcode=user['passcode'])
     registration_data = {
         'email' : user['email'],
@@ -56,8 +56,22 @@ def register():
         'username' : app.config['MAIL_USERNAME'],
         'password' : app.config['MAIL_PASSWORD']
     }
+    User.cache_passcode(rc, user)
     User.mail_passcode(**registration_data)
     return 'message sent'
+
+@app.route('/verify-account', methods=['GET', 'POST'])
+def verify_account():
+    user = {
+      'username' : 'USERNAME HERE',
+      'passcode' : 'PASSCODE HERE'
+    }
+    result = User.verify_passcode(rc, **user)
+    response = make_response(result)
+    if response.status_code == 401:
+        return result
+    else:
+        return redirect(url_for('explore'))
 
 
 @app.route('/signin', methods=['GET', 'POST'])
