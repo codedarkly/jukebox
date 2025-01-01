@@ -39,15 +39,11 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    user = {
-     'name' : 'Bobby',
-     'username' : 'USERNAME HERE',
-     'passcode' : User.generate_passcode(),
-     'email' : app.config['MAIL_TEST_RECIPIENT']
-    }
-    template = render_template('email.html', name=user['name'], passcode=user['passcode'])
+    passcode = User.generate_passcode()
+    user = User(fullname='NAME HERE',username='USERNAME HERE',email=app.config['MAIL_TEST_RECIPIENT'])
+    template = render_template('email.html', name=user.fullname, passcode=passcode)
     registration_data = {
-        'email' : user['email'],
+        'email' : user.email,
         'subject' : 'Welcome to Jukebox - Registration',
         'sender' : app.config['MAIL_DEFAULT_SENDER'],
         'port' : app.config['MAIL_PORT'],
@@ -56,9 +52,16 @@ def register():
         'username' : app.config['MAIL_USERNAME'],
         'password' : app.config['MAIL_PASSWORD']
     }
-    User.cache_passcode(rc, user)
-    User.mail_passcode(**registration_data)
-    return 'message sent'
+    user_account = User.check_for_account_existence(user)
+    account_response = make_response(user_account)
+    if account_response.status_code == 301:
+        return user_account
+    else:
+        user_data = {'username' : user.username, 'email' : user.email, 'passcode' : passcode}
+        User.cache_passcode(rc, user_data)
+        User.mail_passcode(**registration_data)
+        return 'message sent'
+
 
 @app.route('/verify-account', methods=['GET', 'POST'])
 def verify_account():

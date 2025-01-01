@@ -25,7 +25,7 @@ class User(db.Model):
     def validate_fullname(self, key, fullname):
         if len(fullname) > 50:
             raise ValueError('Full name cannot be more than 50 characters')
-        elif not re.match("^[a-zA-Z]+$", fullname):
+        elif not re.match("^[a-zA-Z\s]+$", fullname):
             raise ValueError('Name must consist of only letters')
         return fullname
 
@@ -83,13 +83,27 @@ class User(db.Model):
             return 'Your passcode or username is incorrect or your passcode has expired', 401
 
 
-    def check_for_account_existence():
+    def signin(self, email):
+        pass
+
+    @staticmethod
+    def register_account(user):
+        if user is not None:
+            db.session.add(user)
+            db.session.commit()
+        return 'User added', 200
+
+    @staticmethod
+    def check_for_account_existence(user):
         #check database for user account
-        pass
+        result = User.query.filter_by(email=user.email).first()
+        if result:
+            return 'User exists', 301
+        else:
+            return User.register_account(user)
 
 
-    def signin():
-        pass
+
 
     def signout():
         pass
