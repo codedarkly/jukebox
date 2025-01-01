@@ -8,9 +8,11 @@ from models.playlist import Playlist
 from models.song import Song
 from dotenv import load_dotenv
 from datetime import datetime
+from flask_redis import FlaskRedis
 import os
 import smtplib
 from email.message import EmailMessage
+import time
 
 load_dotenv('.env')
 
@@ -24,7 +26,11 @@ app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS')
 app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+app.config['MAIL_TEST_RECIPIENT'] = os.environ.get('MAIL_TEST_RECIPIENT')
+app.config['REDIS_URL'] = os.environ.get('REDIS_URL')
 db.init_app(app)
+rc = FlaskRedis(app)
+
 
 
 @app.route('/', methods=['GET'])
@@ -33,9 +39,15 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    template = render_template('email.html', name='Bobby', passcode=User.generate_passcode())
+    user = {
+     'name' : 'Bobby',
+     'passcode' : User.generate_passcode(),
+     'email' : app.config['MAIL_TEST_RECIPIENT']
+    }
+    User.cache_passcode(rc, user)
+    template = render_template('email.html', name=user['name'], passcode=user['passcode'])
     registration_data = {
-        'email' : 'me@example.net',
+        'email' : user['email'],
         'subject' : 'Welcome to Jukebox - Registration',
         'sender' : app.config['MAIL_DEFAULT_SENDER'],
         'port' : app.config['MAIL_PORT'],
@@ -46,6 +58,7 @@ def register():
     }
     User.mail_passcode(**registration_data)
     return 'message sent'
+
 
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():

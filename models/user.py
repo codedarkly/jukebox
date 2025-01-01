@@ -7,6 +7,7 @@ from email.message import EmailMessage
 import re
 import random
 import string
+import time
 
 db = SQLAlchemy()
 
@@ -62,7 +63,18 @@ class User(db.Model):
            smtp.send_message(msg)
        return 200
 
+    @staticmethod
+    def cache_passcode(rc, user):
+        registration_ts = f'user:00{str(int(time.time()))}'
+        rc.hset(registration_ts, mapping=user)
+        rc.expire(registration_ts, 900)
+        rc_result = rc.hgetall(registration_ts)
+        data = {k.decode():v.decode() for k,v in rc_result.items()}
+        return data
 
+    def verify_passcode():
+        #verify that the passcode matches account
+        pass
 
 
 
@@ -78,9 +90,7 @@ class User(db.Model):
         #check for user account
         pass
 
-    def verify_passcode():
-        #verify that the passcode matches account
-        pass
+
 
     def deactivate_account():
         pass
