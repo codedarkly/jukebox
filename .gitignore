@@ -4,3 +4,5 @@ uploads
 .DS_Store?
 .env
 seed.py
+/static/images
+/static/songs

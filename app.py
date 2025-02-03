@@ -31,8 +31,6 @@ app.config['REDIS_URL'] = os.environ.get('REDIS_URL')
 db.init_app(app)
 rc = FlaskRedis(app)
 
-
-
 @app.route('/', methods=['GET'])
 def index():
    pass
@@ -40,7 +38,7 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     passcode = User.generate_passcode()
-    user = User(fullname='NAME HERE',username='USERNAME HERE',email=app.config['MAIL_TEST_RECIPIENT'])
+    user = User(fullname='',username='',email=app.config['MAIL_TEST_RECIPIENT'])
     template = render_template('email.html', name=user.fullname, passcode=passcode)
     registration_data = {
         'email' : user.email,
@@ -54,13 +52,18 @@ def register():
     }
     user_account = User.check_for_account_existence(user)
     account_response = make_response(user_account)
-    if account_response.status_code == 301:
+    if account_response.status_code == 409:
         return user_account
     else:
         user_data = {'username' : user.username, 'email' : user.email, 'passcode' : passcode}
         User.cache_passcode(rc, user_data)
         User.mail_passcode(**registration_data)
         return 'message sent'
+
+
+@app.route('/signin', methods=['GET', 'POST'])
+def signin():
+    pass
 
 
 @app.route('/verify-account', methods=['GET', 'POST'])
@@ -77,9 +80,6 @@ def verify_account():
         return redirect(url_for('explore'))
 
 
-@app.route('/signin', methods=['GET', 'POST'])
-def signin():
-    pass
 
 @app.route('/signout', methods=['GET'])
 def signout():
@@ -89,16 +89,33 @@ def signout():
 def settings():
     pass
 
-@app.route('/explore', methods=['GET'])
-def explore():
+@app.route('/jukebox', methods=['GET'])
+def jukebox():
     pass
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     pass
 
-@app.route('/your-music',methods=['GET', 'POST'])
-def music_library():
+@app.route('/my-jukebox',methods=['GET', 'POST'])
+def my_jukebox():
+    pass
+
+@app.route('/my-jukebox/<jukebox_id>')
+def my_jukebox_item():
+    pass
+
+@app.route('/my-jukebox/song/<song_id>')
+def song():
+    pass
+
+@app.route('/my-jukebox/add/song')
+def add_song():
+    pass
+
+@app.route('/my-jukebox/share/song')
+def share_song():
+    #this will set the song to public so it will show up on the jukebox
     pass
 
 @app.route('/song-of-the-day', methods=['GET'])
