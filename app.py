@@ -33,7 +33,7 @@ rc = FlaskRedis(app)
 
 @app.route('/', methods=['GET'])
 def index():
-   pass
+   return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+     <title>Jukebox</title>
+     <link rel="stylesheet" href="https://use.typekit.net/onp6pxj.css">
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css')}}">
+   </head>
+   <body>
+      {% block content %}{% endblock %}
+      <script src="{{ url_for('static', filename='js/main.js')}}"></script>
+   </body>
+</html>
